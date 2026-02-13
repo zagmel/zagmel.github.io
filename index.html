@@ -1,193 +1,125 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<title>Zentrale Autoglas - Odoo Insights</title>
-<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@600;800&family=Source+Sans+3:wght@400;600&display=swap%22 rel="stylesheet">
-<style>
-:root {
-    --zag-mint: #00B294; 
-    --zag-dark-grey: #33393E; 
-    --zag-light-bg: #FFFFFF;
-    --zag-border: #E0E0E0;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700;800&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --zag-mint: #3FB59A; /* Brandguide S.7 */
+            --zag-anthrazit: #383D42; /* Brandguide S.7 */
+            --zag-light-bg: #FFFFFF;
+        }
 
-body { 
-    font-family: 'Source Sans 3', sans-serif; /* Hausschrift laut Brandguide  */
-    padding: 10px; 
-    background-color: #F5F7F7; 
-    color: var(--zag-dark-grey);
-    margin: 0;
-}
+        body { 
+            font-family: 'Source Sans 3', sans-serif; 
+            padding: 10px; 
+            background-color: #F5F7F7; 
+            color: var(--zag-anthrazit); 
+            margin: 0;
+        }
 
-.card { 
-    background: var(--zag-light-bg); 
-    border-radius: 8px; 
-    padding: 15px; 
-    max-width: 100%; /* Verhindert das Rausragen */
-    margin: auto; 
-    border-top: 4px solid var(--zag-mint);
-    box-sizing: border-box;
-}
+        .card { 
+            background: var(--zag-light-bg); 
+            border-radius: 8px; 
+            padding: 20px; 
+            max-width: 450px; 
+            margin: auto; 
+            border-top: 5px solid var(--zag-mint);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; gap: 10px; }
+        .logo { width: 120px; height: auto; }
+        .contact-header h2 { 
+            margin: 0; 
+            font-family: 'Exo 2', sans-serif; 
+            font-weight: 800; 
+            font-size: 1.2em; 
+        }
 
-/* Header-Layout für schmale Fenster optimiert */
-.header { 
-    display: flex; 
-    flex-direction: column-reverse; /* Logo über den Namen bei Platzmangel */
-    align-items: flex-start; 
-    gap: 10px;
-    margin-bottom: 20px; 
-}
+        .grid { display: grid; grid-template-columns: 100px 1fr; gap: 10px; margin-bottom: 20px; }
+        .label { font-weight: 600; color: var(--zag-mint); font-size: 0.75em; text-transform: uppercase; }
+        .value { font-size: 0.95em; border-bottom: 1px solid #eee; padding-bottom: 2px; word-break: break-all; }
 
-@media (min-width: 300px) {
-    .header {
-        flex-direction: row; /* Ab 300px Breite wieder nebeneinander */
-        justify-content: space-between;
-    }
-}
+        .footer { display: flex; flex-direction: column; gap: 10px; }
+        
+        .odoo-btn { 
+            padding: 12px; 
+            text-decoration: none; 
+            border-radius: 4px; 
+            font-weight: 600; 
+            font-size: 14px;
+            text-align: center;
+            transition: 0.2s;
+            cursor: pointer;
+            border: none;
+            display: block; /* Immer anzeigen für den Test, später auf none */
+        }
 
-.logo { 
-    max-width: 100px; /* Kleiner für den kleinen Viewport */
-    height: auto; 
-    display: block;
-}
-
-.contact-header h2 { 
-    margin: 0; 
-    color: var(--zag-dark-grey); 
-    font-family: 'Exo 2', sans-serif; /* Schmuckschrift laut Brandguide  */
-    font-weight: 800;
-    font-size: 1.1em; /* Schriftgröße reduziert */
-    line-height: 1.2;
-}
-
-/* Grid auf einspaltig umstellen, wenn es zu eng wird */
-.grid { 
-    display: grid; 
-    grid-template-columns: 1fr; /* Eine Spalte untereinander */
-    gap: 5px; 
-}
-
-@media (min-width: 350px) {
-    .grid {
-        grid-template-columns: 90px 1fr; /* Ab 350px wieder zweispaltig */
-        gap: 12px;
-    }
-}
-
-.label { 
-    font-weight: 600; 
-    color: var(--zag-mint); 
-    font-size: 0.7em; 
-    text-transform: uppercase;
-}
-
-.value { 
-    font-size: 0.9em; 
-    border-bottom: 1px solid var(--zag-border); 
-    padding-bottom: 2px;
-    word-break: break-all; /* Verhindert, dass lange E-Mails das Layout sprengen */
-}
-
-.footer { 
-    margin-top: 20px; 
-    display: flex; 
-    flex-direction: column; /* Buttons untereinander */
-    gap: 8px; 
-}
-
-@media (min-width: 400px) {
-    .footer {
-        flex-direction: row; /* Bei breitem Fenster nebeneinander */
-    }
-}
-
-.odoo-btn { 
-    width: 100%;
-    box-sizing: border-box;
-    /* ... restliches Button Styling bleibt ... */
-}
-</style>
+        .btn-primary { background-color: var(--zag-anthrazit); color: white; }
+        .btn-secondary { background-color: white; color: var(--zag-mint); border: 2px solid var(--zag-mint); }
+    </style>
 </head>
 <body>
- 
+
 <div class="card">
-<div class="header">
-<div class="contact-header">
-<h2 id="name">Lade Kontakt...</h2>
-<div id="company_name" style="font-size: 0.9em; opacity: 0.8;"></div>
-</div>
-<img src="https://www.zentrale-autoglas.de/cdn/shop/files/ZAG_Logo_2025_sRGB_grey_512px.png?v=1759404850&width=180%22 alt="ZAG Logo" class="logo">
-</div>
- 
-    <div id="data-grid" class="grid">
-<div class="label">Kunden-Nr</div><div id="customer_number" class="value"></div>
-<div class="label">E-Mail</div><div id="email" class="value"></div>
-<div class="label">Telefon</div><div id="phone" class="value"></div>
-<div class="label">Adresse</div><div id="address" class="value"></div>
-</div>
- 
+    <div class="header">
+        <div class="contact-header">
+            <h2 id="name">Kontakt laden...</h2>
+            <div id="company_name" style="font-size: 0.9em; opacity: 0.7;"></div>
+        </div>
+        <img src="https://www.zentrale-autoglas.de/cdn/shop/files/ZAG_Logo_2025_sRGB_grey_512px.png?v=1759404850&width=180" class="logo">
+    </div>
+
+    <div class="grid">
+        <div class="label">Kunden-Nr</div><div id="customer_number" class="value">---</div>
+        <div class="label">E-Mail</div><div id="email" class="value">---</div>
+        <div class="label">Telefon</div><div id="phone" class="value">---</div>
+        <div class="label">Adresse</div><div id="address" class="value">---</div>
+    </div>
+
     <div class="footer">
-<a id="btnContact" href="#" target="_blank" class="odoo-btn btn-primary">Odoo Kontakt</a>
-<a id="btnSales" href="#" target="_blank" class="odoo-btn btn-secondary">Odoo Verkauf</a>
-</div>
-</div>
- 
-<div class="footer">
-    <button id="btnContact" class="odoo-btn btn-primary" onclick="openOdoo('contact')">Odoo Kontakt</button>
-    <button id="btnSales" class="odoo-btn btn-secondary" onclick="openOdoo('sales')">Odoo Verkauf</button>
+        <button onclick="openOdoo('contact')" class="odoo-btn btn-primary">Odoo Kontakt</button>
+        <button onclick="openOdoo('sales')" class="odoo-btn btn-secondary">Odoo Verkauf</button>
+    </div>
 </div>
 
 <script>
-    let currentEid = null;
+    let activeEid = null;
 
     function renderInsights(data) {
         if (!data || !data.contact) return;
         const c = data.contact;
+        activeEid = c.entryId || c.dbNativeId; // Versuche verschiedene ID-Felder
 
-        // Visualisierung der Daten
-        document.getElementById('name').innerText = c.personal?.name?.displayName || c.personal?.name?.fullName || "Unbekannt";
+        document.getElementById('name').innerText = c.personal?.name?.displayName || "Unbekannt";
         document.getElementById('company_name').innerText = c.company?.name || "";
         document.getElementById('customer_number').innerText = c.customFields?.custom1 || "---";
         document.getElementById('email').innerText = c.emails?.primary || "---";
         document.getElementById('phone').innerText = Array.isArray(c.phoneNumbers?.work) ? c.phoneNumbers.work[0] : (c.phoneNumbers?.work || "---");
         
         const addr = c.personal?.address;
-        document.getElementById('address').innerText = addr ? `${addr.street || ""}, ${addr.postalCode || ""} ${addr.city || ""}` : "---";
-
-        // ID-Suche: Wir prüfen alle möglichen Felder, in denen die Odoo-ID stecken könnte
-        currentEid = c.entryId || c.dbNativeId || c.id;
-
-        if (currentEid) {
-            document.getElementById('btnContact').style.display = "block";
-            document.getElementById('btnSales').style.display = "block";
-        } else {
-            console.error("Keine ID im Datensatz gefunden!", c);
-        }
+        if(addr) document.getElementById('address').innerText = `${addr.street}, ${addr.postalCode} ${addr.city}`;
     }
 
     function openOdoo(type) {
-        if (!currentEid) {
-            alert("Fehler: Keine Kontakt-ID (EID) für diesen Anrufer gefunden.");
+        if (!activeEid) {
+            alert("Fehler: Keine EID vom XPhone Server erhalten.");
             return;
         }
+        
+        const urls = {
+            contact: `https://odoo.zentrale-autoglas.de/web#id=${activeEid}&cids=1&menu_id=102&action=131&model=res.partner&view_type=form`,
+            sales: `https://odoo.zentrale-autoglas.de/web#action=795&active_id=${activeEid}&model=sale.order&view_type=list&cids=1&menu_id=102`
+        };
 
-        let url = "";
-        if (type === 'contact') {
-            url = `https://odoo.zentrale-autoglas.de/web#id=${currentEid}&cids=1&menu_id=102&action=131&model=res.partner&view_type=form`;
-        } else {
-            url = `https://odoo.zentrale-autoglas.de/web#action=795&active_id=${currentEid}&model=sale.order&view_type=list&cids=1&menu_id=102`;
-        }
-
-        // Öffnet den Link im Standardbrowser des Benutzers außerhalb von Teams
-        window.open(url, '_blank');
+        window.open(urls[type], '_blank');
     }
 
-    // XPhone Kommunikation
-    window.addEventListener('message', function(event) {
+    window.addEventListener('message', (event) => {
         if (event.data) renderInsights(event.data);
     });
 </script>
- 
 </body>
 </html>
