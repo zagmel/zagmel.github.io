@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Zentrale Autoglas - Odoo Insights</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@600;800&family=Source+Sans+3:wght@400;600&display=swap%22 rel="stylesheet">
+<style>
+        :root {
+            --zag-mint: #00B294; [cite_start]/* ZAG Mint [cite: 80] */
+            --zag-dark-grey: #33393E; [cite_start]/* ZAG Dunkelgrau [cite: 80] */
+            --zag-light-bg: #FFFFFF;
+            --zag-border: #E0E0E0;
+        }
+ 
+        body { 
+            font-family: 'Source Sans 3', sans-serif; 
+            padding: 15px; 
+            background-color: #F5F7F7; 
+            color: var(--zag-dark-grey); 
+        }
+ 
+        .card { 
+            background: var(--zag-light-bg); 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+            padding: 25px; 
+            max-width: 500px; 
+            margin: auto; 
+            border-top: 4px solid var(--zag-mint);
+        }
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 25px; 
+        }
+ 
+        .logo { width: 130px; height: auto; }
+ 
+        .contact-header h2 { 
+            margin: 0; 
+            color: var(--zag-dark-grey); 
+            font-family: 'Exo 2', sans-serif; 
+            font-weight: 800;
+            font-size: 1.4em;
+        }
+ 
+        .grid { display: grid; grid-template-columns: 110px 1fr; gap: 12px; }
+        .label { 
+            font-weight: 600; 
+            color: var(--zag-mint); 
+            font-size: 0.75em; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em;
+            align-self: center;
+        }
+ 
+        .value { 
+            font-size: 0.95em; 
+            border-bottom: 1px solid var(--zag-border); 
+            padding-bottom: 4px; 
+            min-height: 1.2em;
+        }
+ 
+        .footer { margin-top: 30px; display: flex; gap: 12px; }
+        .odoo-btn { 
+            flex: 1;
+            padding: 10px; 
+            text-decoration: none; 
+            border-radius: 4px; 
+            font-weight: 600; 
+            font-size: 13px;
+            text-align: center;
+            transition: all 0.2s ease;
+            font-family: 'Source Sans 3', sans-serif;
+            display: none; /* Erst anzeigen wenn EID da ist */
+        }
+ 
+        .btn-primary { 
+            background-color: var(--zag-dark-grey); 
+            color: white; 
+            border: 1px solid var(--zag-dark-grey);
+        }
+ 
+        .btn-secondary { 
+            background-color: transparent; 
+            color: var(--zag-mint); 
+            border: 2px solid var(--zag-mint);
+        }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-secondary:hover { background-color: var(--zag-mint); color: white; }
+</style>
+</head>
+<body>
+ 
+<div class="card">
+<div class="header">
+<div class="contact-header">
+<h2 id="name">Lade Kontakt...</h2>
+<div id="company_name" style="font-size: 0.9em; opacity: 0.8;"></div>
+</div>
+<img src="https://www.zentrale-autoglas.de/cdn/shop/files/ZAG_Logo_2025_sRGB_grey_512px.png?v=1759404850&width=180%22 alt="ZAG Logo" class="logo">
+</div>
+ 
+    <div id="data-grid" class="grid">
+<div class="label">Kunden-Nr</div><div id="customer_number" class="value"></div>
+<div class="label">E-Mail</div><div id="email" class="value"></div>
+<div class="label">Telefon</div><div id="phone" class="value"></div>
+<div class="label">Adresse</div><div id="address" class="value"></div>
+</div>
+ 
+    <div class="footer">
+<a id="btnContact" href="#" target="_blank" class="odoo-btn btn-primary">Odoo Kontakt</a>
+<a id="btnSales" href="#" target="_blank" class="odoo-btn btn-secondary">Odoo Verkauf</a>
+</div>
+</div>
+ 
+<script>
+    // Die Hauptfunktion zum Befüllen der Felder
+    function renderInsights(data) {
+        if (!data || !data.contact) return;
+        const c = data.contact;
+ 
+        // Basisdaten setzen
+        document.getElementById('name').innerText = c.personal?.name?.displayName || c.personal?.name?.fullName || "Unbekannt";
+        document.getElementById('company_name').innerText = c.company?.name || "";
+        // vDir gemappte Felder
+        document.getElementById('customer_number').innerText = c.customFields?.custom1 || "---";
+        document.getElementById('email').innerText = c.emails?.primary || "---";
+        document.getElementById('phone').innerText = Array.isArray(c.phoneNumbers?.work) ? c.phoneNumbers.work[0] : (c.phoneNumbers?.work || "---");
+        const addr = c.personal?.address;
+        document.getElementById('address').innerText = addr ? `${addr.street || ""}, ${addr.postalCode || ""} ${addr.city || ""}` : "---";
+ 
+        // Buttons mit EID aktivieren
+        const eid = c.entryId;
+        if (eid) {
+            const btnC = document.getElementById('btnContact');
+            const btnS = document.getElementById('btnSales');
+            btnC.href = `https://odoo.zentrale-autoglas.de/web#id=${eid}&cids=1&menu_id=102&action=131&model=res.partner&vie…
+            btnS.href = `https://odoo.zentrale-autoglas.de/web#action=795&active_id=${eid}&model=sale.order&view_type=list&c…
+            btnC.style.display = "block";
+            btnS.style.display = "block";
+        }
+    }
+ 
+    // Hören auf Daten von XPhone Connect
+    window.addEventListener('message', function(event) {
+        if (event.data) renderInsights(event.data);
+    });
+ 
+    /**
+     * TESTDATEN-BLOCK
+     * Zum Testen am IIS einfach die Kommentarstriche (/* und * /) entfernen.
+     * Wenn die Seite in Produktion geht, diesen Block wieder auskommentieren.
+     */
+    /*
+    window.onload = function() {
+        console.log("Test-Modus aktiv");
+        const mockData = {
+            contact: {
+                entryId: "8",
+                personal: { 
+                    name: { displayName: "Zentrale Autoglas GmbH" },
+                    address: { street: "Molkereistr. 4", city: "Wiener Neustadt", postalCode: "2700" }
+                },
+                emails: { primary: "info@zentrale-autoglas.at" },
+                phoneNumbers: { work: ["+43 2622 24870"] },
+                company: { name: "Hauptverwaltung" },
+                customFields: { custom1: "153560" } // Entspricht deiner 'customer_number'
+            }
+        };
+        // Kleine Verzögerung um den Lade-Effekt zu sehen
+        setTimeout(() => renderInsights(mockData), 800);
+    };
+    */
+</script>
+ 
+</body>
+</html>
