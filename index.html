@@ -13,7 +13,7 @@
             --zag-bg: #F5F7F7;
         }
         body { 
-            font-family: 'Source Sans 3', sans-serif; /* Hausschrift [cite: 9] */
+            font-family: 'Source Sans 3', sans-serif; 
             padding: 10px; 
             background-color: var(--zag-bg); 
             color: var(--zag-anthrazit); 
@@ -39,7 +39,7 @@
         .logo { width: 120px; height: auto; }
         h2 { 
             margin: 0; 
-            font-family: 'Exo 2', sans-serif; /* Schmuckschrift [cite: 9] */
+            font-family: 'Exo 2', sans-serif; 
             font-weight: 800; 
             font-size: 1.2em; 
         }
@@ -64,9 +64,7 @@
             border: none; 
             text-decoration: none; 
             display: none; 
-            transition: opacity 0.2s;
         }
-        .btn:hover { opacity: 0.8; }
         .btn-p { background-color: var(--zag-anthrazit); color: white; }
         .btn-s { background-color: white; color: var(--zag-mint); border: 2px solid var(--zag-mint); }
     </style>
@@ -93,10 +91,11 @@
         if (!data || !data.contact) return;
         const c = data.contact;
         
-        // FIX: Trenne die ID am ersten Bindestrich
-        // "48794--1" -> wird am '-' gesplittet -> [0] ist "48794"
+        // SICHERE ID-REINIGUNG: Extrahiert nur die Ziffern am Anfang der ID
+        // "48794--1" -> match(/^\d+/) -> Resultat ist "48794"
         const rawId = String(c.entryId || c.dbNativeId || "");
-        const cleanId = rawId.split('-')[0].trim();
+        const match = rawId.match(/^\d+/);
+        const cleanId = match ? match[0] : null;
 
         document.getElementById('name').innerText = c.personal?.name?.displayName || c.personal?.name?.fullName || "Unbekannt";
         document.getElementById('comp').innerText = c.company?.name || "";
@@ -107,7 +106,7 @@
         const a = c.personal?.address;
         if(a) document.getElementById('addr').innerText = `${a.street || ""}, ${a.postalCode || ""} ${a.city || ""}`;
 
-        if (cleanId && cleanId !== "") {
+        if (cleanId) {
             const bC = document.getElementById('lnkC');
             const bS = document.getElementById('lnkS');
             
