@@ -94,36 +94,38 @@
         if (!data || !data.contact) return;
         const c = data.contact;
 
-        // REGEX-FIX: Extrahiert nur die Ziffern am Anfang der ID
-        // Macht aus "48794--1", "48794-1" oder "48794/x" immer "48794"
-        let rawEid = String(c.entryId || c.dbNativeId || "");
-        let cleanEid = rawEid.match(/^\d+/); // Sucht nach der Zahlenfolge am Beginn
-        
-        if (cleanEid) cleanEid = cleanEid[0];
+        // RADIKALER FIX: parseInt extrahiert die Zahl am Anfang und verwirft den Rest
+        // "48794--1" wird garantiert zu "48794"
+        let rawEid = c.entryId || c.dbNativeId || "";
+        let cleanEid = parseInt(rawEid, 10); 
 
-        // Felder befüllen
-        document.getElementById('name').innerText = c.personal?.name?.displayName || "Unbekannt";
-        document.getElementById('company_name').innerText = c.company?.name || "";
-        document.getElementById('customer_number').innerText = c.customFields?.custom1 || "---";
-        document.getElementById('email').innerText = c.emails?.primary || "---";
-        document.getElementById('phone').innerText = Array.isArray(c.phoneNumbers?.work) ? c.phoneNumbers.work[0] : (c.phoneNumbers?.work || "---");
+        // Felder befüllen (Citations aus vDir Mapping & Brandguide)
+        document.getElementById('name').innerText = c.personal?.name?.displayName || "Unbekannt"; [cite: 8]
+        document.getElementById('company_name').innerText = c.company?.name || ""; [cite: 8]
+        document.getElementById('customer_number').innerText = c.customFields?.custom1 || "---"; [cite: 8]
+        document.getElementById('email').innerText = c.emails?.primary || "---"; [cite: 8]
+        document.getElementById('phone').innerText = Array.isArray(c.phoneNumbers?.work) ? c.phoneNumbers.work[0] : (c.phoneNumbers?.work || "---"); [cite: 8]
         
-        const addr = c.personal?.address;
-        if(addr) document.getElementById('address').innerText = `${addr.street || ""}, ${addr.postalCode || ""} ${addr.city || ""}`;
+        const addr = c.personal?.address; [cite: 8]
+        if(addr) {
+            document.getElementById('address').innerText = `${addr.street || ""}, ${addr.postalCode || ""} ${addr.city || ""}`; [cite: 8]
+        }
 
-        // Buttons mit der gereinigten ID aktivieren
-        if (cleanEid) {
+        // Links bauen - NUR wenn cleanEid eine gültige Zahl ist
+        if (!isNaN(cleanEid)) {
             const btnC = document.getElementById('btnContact');
             const btnS = document.getElementById('btnSales');
 
+            // Zusammenbau der URLs ohne die störenden Anhänge
             btnC.href = `https://odoo.zentrale-autoglas.de/web#id=${cleanEid}&cids=1&menu_id=102&action=131&model=res.partner&view_type=form`;
             btnS.href = `https://odoo.zentrale-autoglas.de/web#action=795&active_id=${cleanEid}&model=sale.order&view_type=list&cids=1&menu_id=102`;
             
             btnC.style.display = "block";
             btnS.style.display = "block";
             
-            // Konsolen-Log für dich zum Prüfen im Browser (F12)
-            console.log("Original ID:", rawEid, "-> Bereinigte ID:", cleanEid);
+            console.log("ID bereinigt für Odoo:", cleanEid);
+        } else {
+            console.error("ID konnte nicht bereinigt werden:", rawEid);
         }
     }
 
