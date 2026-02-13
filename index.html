@@ -133,64 +133,60 @@ body {
 </div>
 </div>
  
+<div class="footer">
+    <button id="btnContact" class="odoo-btn btn-primary" onclick="openOdoo('contact')">Odoo Kontakt</button>
+    <button id="btnSales" class="odoo-btn btn-secondary" onclick="openOdoo('sales')">Odoo Verkauf</button>
+</div>
+
 <script>
-    // Die Hauptfunktion zum Befüllen der Felder
+    let currentEid = null;
+
     function renderInsights(data) {
         if (!data || !data.contact) return;
         const c = data.contact;
- 
-        // Basisdaten setzen
+
+        // Visualisierung der Daten
         document.getElementById('name').innerText = c.personal?.name?.displayName || c.personal?.name?.fullName || "Unbekannt";
         document.getElementById('company_name').innerText = c.company?.name || "";
-        // vDir gemappte Felder
         document.getElementById('customer_number').innerText = c.customFields?.custom1 || "---";
         document.getElementById('email').innerText = c.emails?.primary || "---";
         document.getElementById('phone').innerText = Array.isArray(c.phoneNumbers?.work) ? c.phoneNumbers.work[0] : (c.phoneNumbers?.work || "---");
+        
         const addr = c.personal?.address;
         document.getElementById('address').innerText = addr ? `${addr.street || ""}, ${addr.postalCode || ""} ${addr.city || ""}` : "---";
- 
-        // Buttons mit EID aktivieren
-        const eid = c.entryId;
-        if (eid) {
-            const btnC = document.getElementById('btnContact');
-            const btnS = document.getElementById('btnSales');
-            btnC.href = `https://odoo.zentrale-autoglas.de/web#id=${eid}&cids=1&menu_id=102&action=131&model=res.partner&vie…
-            btnS.href = `https://odoo.zentrale-autoglas.de/web#action=795&active_id=${eid}&model=sale.order&view_type=list&c…
-            btnC.style.display = "block";
-            btnS.style.display = "block";
+
+        // ID-Suche: Wir prüfen alle möglichen Felder, in denen die Odoo-ID stecken könnte
+        currentEid = c.entryId || c.dbNativeId || c.id;
+
+        if (currentEid) {
+            document.getElementById('btnContact').style.display = "block";
+            document.getElementById('btnSales').style.display = "block";
+        } else {
+            console.error("Keine ID im Datensatz gefunden!", c);
         }
     }
- 
-    // Hören auf Daten von XPhone Connect
+
+    function openOdoo(type) {
+        if (!currentEid) {
+            alert("Fehler: Keine Kontakt-ID (EID) für diesen Anrufer gefunden.");
+            return;
+        }
+
+        let url = "";
+        if (type === 'contact') {
+            url = `https://odoo.zentrale-autoglas.de/web#id=${currentEid}&cids=1&menu_id=102&action=131&model=res.partner&view_type=form`;
+        } else {
+            url = `https://odoo.zentrale-autoglas.de/web#action=795&active_id=${currentEid}&model=sale.order&view_type=list&cids=1&menu_id=102`;
+        }
+
+        // Öffnet den Link im Standardbrowser des Benutzers außerhalb von Teams
+        window.open(url, '_blank');
+    }
+
+    // XPhone Kommunikation
     window.addEventListener('message', function(event) {
         if (event.data) renderInsights(event.data);
     });
- 
-    /**
-     * TESTDATEN-BLOCK
-     * Zum Testen am IIS einfach die Kommentarstriche (/* und * /) entfernen.
-     * Wenn die Seite in Produktion geht, diesen Block wieder auskommentieren.
-     */
-    /*
-    window.onload = function() {
-        console.log("Test-Modus aktiv");
-        const mockData = {
-            contact: {
-                entryId: "8",
-                personal: { 
-                    name: { displayName: "Zentrale Autoglas GmbH" },
-                    address: { street: "Molkereistr. 4", city: "Wiener Neustadt", postalCode: "2700" }
-                },
-                emails: { primary: "info@zentrale-autoglas.at" },
-                phoneNumbers: { work: ["+43 2622 24870"] },
-                company: { name: "Hauptverwaltung" },
-                customFields: { custom1: "153560" } // Entspricht deiner 'customer_number'
-            }
-        };
-        // Kleine Verzögerung um den Lade-Effekt zu sehen
-        setTimeout(() => renderInsights(mockData), 800);
-    };
-    */
 </script>
  
 </body>
