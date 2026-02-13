@@ -7,64 +7,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@800&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Farben exakt nach Brandguide Seite 7 */
             --zag-mint: #3FB59A; 
             --zag-anthrazit: #383D42;
             --zag-bg: #F5F7F7;
         }
-        body { 
-            font-family: 'Source Sans 3', sans-serif; 
-            padding: 10px; 
-            background-color: var(--zag-bg); 
-            color: var(--zag-anthrazit); 
-            margin: 0; 
-        }
-        .card { 
-            background: #fff; 
-            border-radius: 8px; 
-            padding: 20px; 
-            max-width: 450px; 
-            margin: auto; 
-            border-top: 5px solid var(--zag-mint); 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
-        }
-        .header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: flex-start; 
-            margin-bottom: 20px; 
-            flex-wrap: wrap-reverse; 
-            gap: 10px;
-        }
+        body { font-family: 'Source Sans 3', sans-serif; padding: 10px; background-color: var(--zag-bg); color: var(--zag-anthrazit); margin: 0; }
+        .card { background: #fff; border-radius: 8px; padding: 20px; max-width: 450px; margin: auto; border-top: 5px solid var(--zag-mint); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap-reverse; gap: 10px; }
         .logo { width: 120px; height: auto; }
-        h2 { 
-            margin: 0; 
-            font-family: 'Exo 2', sans-serif; 
-            font-weight: 800; 
-            font-size: 1.2em; 
-        }
+        h2 { margin: 0; font-family: 'Exo 2', sans-serif; font-weight: 800; font-size: 1.2em; }
         .grid { display: grid; grid-template-columns: 100px 1fr; gap: 10px; margin-bottom: 20px; }
-        .label { 
-            font-weight: 600; 
-            color: var(--zag-mint); 
-            font-size: 0.75em; 
-            text-transform: uppercase; 
-        }
+        .label { font-weight: 600; color: var(--zag-mint); font-size: 0.75em; text-transform: uppercase; }
         .value { font-size: 0.95em; border-bottom: 1px solid #eee; word-break: break-all; min-height: 1.2em; }
         .footer { display: flex; flex-direction: column; gap: 10px; }
         @media (min-width: 380px) { .footer { flex-direction: row; } }
-        .btn { 
-            flex: 1; 
-            padding: 12px; 
-            border-radius: 4px; 
-            font-weight: 600; 
-            font-size: 14px; 
-            text-align: center; 
-            cursor: pointer; 
-            border: none; 
-            text-decoration: none; 
-            display: none; 
-        }
+        .btn { flex: 1; padding: 12px; border-radius: 4px; font-weight: 600; font-size: 14px; text-align: center; cursor: pointer; border: none; text-decoration: none; display: none; }
         .btn-p { background-color: var(--zag-anthrazit); color: white; }
         .btn-s { background-color: white; color: var(--zag-mint); border: 2px solid var(--zag-mint); }
     </style>
@@ -72,7 +29,7 @@
 <body>
 <div class="card">
     <div class="header">
-        <div><h2 id="name">Lade Kontakt...</h2><div id="comp" style="font-size: 0.9em; opacity: 0.7;"></div></div>
+        <div><h2 id="name">Suche Kontakt...</h2><div id="comp" style="font-size: 0.9em; opacity: 0.7;"></div></div>
         <img src="https://www.zentrale-autoglas.de/cdn/shop/files/ZAG_Logo_2025_sRGB_grey_512px.png?v=1759404850&width=180" class="logo">
     </div>
     <div class="grid">
@@ -91,11 +48,10 @@
         if (!data || !data.contact) return;
         const c = data.contact;
         
-        // SICHERE ID-REINIGUNG: Extrahiert nur die Ziffern am Anfang der ID
-        // "48794--1" -> match(/^\d+/) -> Resultat ist "48794"
-        const rawId = String(c.entryId || c.dbNativeId || "");
-        const match = rawId.match(/^\d+/);
-        const cleanId = match ? match[0] : null;
+        // DIE ABSOLUTE BEREINIGUNG:
+        // Wir nehmen den String, splitten beim ERSTEN Bindestrich und nehmen das Element davor.
+        let rawId = String(c.entryId || c.dbNativeId || "");
+        let cleanId = rawId.split('-')[0].replace(/\s/g, ''); // Splitten UND Leerzeichen entfernen
 
         document.getElementById('name').innerText = c.personal?.name?.displayName || c.personal?.name?.fullName || "Unbekannt";
         document.getElementById('comp').innerText = c.company?.name || "";
@@ -106,12 +62,13 @@
         const a = c.personal?.address;
         if(a) document.getElementById('addr').innerText = `${a.street || ""}, ${a.postalCode || ""} ${a.city || ""}`;
 
-        if (cleanId) {
+        if (cleanId && cleanId.length > 0 && !isNaN(cleanId)) {
             const bC = document.getElementById('lnkC');
             const bS = document.getElementById('lnkS');
             
-            bC.href = `https://odoo.zentrale-autoglas.de/web#id=${cleanId}&cids=1&menu_id=102&action=131&model=res.partner&view_type=form`;
-            bS.href = `https://odoo.zentrale-autoglas.de/web#action=795&active_id=${cleanId}&model=sale.order&view_type=list&cids=1&menu_id=102`;
+            // Wir setzen die Links NEU und löschen alte Eventualitäten
+            bC.setAttribute('href', `https://odoo.zentrale-autoglas.de/web#id=${cleanId}&cids=1&menu_id=102&action=131&model=res.partner&view_type=form`);
+            bS.setAttribute('href', `https://odoo.zentrale-autoglas.de/web#action=795&active_id=${cleanId}&model=sale.order&view_type=list&cids=1&menu_id=102`);
             
             bC.style.display = "block";
             bS.style.display = "block";
