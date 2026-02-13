@@ -94,11 +94,14 @@
         if (!data || !data.contact) return;
         const c = data.contact;
 
-        // EID bereinigen: Alles nach dem ersten '-' entfernen (z.B. "48794--1" -> "48794")
-        let rawEid = c.entryId || c.dbNativeId || "";
-        let cleanEid = String(rawEid).split('-')[0];
+        // REGEX-FIX: Extrahiert nur die Ziffern am Anfang der ID
+        // Macht aus "48794--1", "48794-1" oder "48794/x" immer "48794"
+        let rawEid = String(c.entryId || c.dbNativeId || "");
+        let cleanEid = rawEid.match(/^\d+/); // Sucht nach der Zahlenfolge am Beginn
+        
+        if (cleanEid) cleanEid = cleanEid[0];
 
-        // Daten anzeigen
+        // Felder befüllen
         document.getElementById('name').innerText = c.personal?.name?.displayName || "Unbekannt";
         document.getElementById('company_name').innerText = c.company?.name || "";
         document.getElementById('customer_number').innerText = c.customFields?.custom1 || "---";
@@ -108,7 +111,7 @@
         const addr = c.personal?.address;
         if(addr) document.getElementById('address').innerText = `${addr.street || ""}, ${addr.postalCode || ""} ${addr.city || ""}`;
 
-        // Links bauen
+        // Buttons mit der gereinigten ID aktivieren
         if (cleanEid) {
             const btnC = document.getElementById('btnContact');
             const btnS = document.getElementById('btnSales');
@@ -118,6 +121,9 @@
             
             btnC.style.display = "block";
             btnS.style.display = "block";
+            
+            // Konsolen-Log für dich zum Prüfen im Browser (F12)
+            console.log("Original ID:", rawEid, "-> Bereinigte ID:", cleanEid);
         }
     }
 
