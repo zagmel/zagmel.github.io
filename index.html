@@ -2,58 +2,22 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZAG Odoo Insights v1.1</title>
+    <title>ZAG Insights Final Fix</title>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@800&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --zag-mint: #3FB59A; /* Secondary Color  */
-            --zag-anthrazit: #383D42; /* Primary Color  */
-            --zag-bg: #FFFFFF; /* Hintergrund für interne Kommunikation [cite: 80] */
-        }
-        body { 
-            font-family: 'Source Sans 3', sans-serif; /* Hausschrift [cite: 87] */
-            padding: 10px; 
-            background-color: #F5F7F7; 
-            color: var(--zag-anthrazit); 
-            margin: 0; 
-        }
-        .card { 
-            background: var(--zag-bg); 
-            border-radius: 8px; 
-            padding: 20px; 
-            max-width: 450px; 
-            margin: auto; 
-            border-top: 5px solid var(--zag-mint); 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
-        }
+        :root { --zag-mint: #3FB59A; --zag-anthrazit: #383D42; }
+        body { font-family: 'Source Sans 3', sans-serif; padding: 10px; background-color: #F5F7F7; color: var(--zag-anthrazit); margin: 0; }
+        .card { background: #fff; border-radius: 8px; padding: 20px; max-width: 450px; margin: auto; border-top: 5px solid var(--zag-mint); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap-reverse; gap: 10px; }
         .logo { width: 120px; height: auto; }
-        h2 { 
-            margin: 0; 
-            font-family: 'Exo 2', sans-serif; /* Schmuckschrift für Namen [cite: 88] */
-            font-weight: 800; 
-            font-size: 1.25em; 
-        }
+        h2 { margin: 0; font-family: 'Exo 2', sans-serif; font-weight: 800; font-size: 1.25em; }
         .grid { display: grid; grid-template-columns: 100px 1fr; gap: 10px; margin-bottom: 20px; }
         .label { font-weight: 600; color: var(--zag-mint); font-size: 0.75em; text-transform: uppercase; }
         .value { font-size: 0.95em; border-bottom: 1px solid #eee; padding-bottom: 2px; }
         .footer { display: flex; flex-direction: column; gap: 10px; }
         @media (min-width: 380px) { .footer { flex-direction: row; } }
-        .btn { 
-            flex: 1; 
-            padding: 12px; 
-            border-radius: 4px; 
-            font-weight: 600; 
-            font-size: 14px; 
-            text-align: center; 
-            cursor: pointer; 
-            text-decoration: none; 
-            display: none; 
-            transition: transform 0.1s;
-        }
-        .btn:active { transform: scale(0.98); }
-        .btn-p { background-color: var(--zag-anthrazit); color: white; border: none; }
+        .btn { flex: 1; padding: 12px; border-radius: 4px; font-weight: 600; font-size: 14px; text-align: center; cursor: pointer; border: none; text-decoration: none; display: none; }
+        .btn-p { background-color: var(--zag-anthrazit); color: white; }
         .btn-s { background-color: white; color: var(--zag-mint); border: 2px solid var(--zag-mint); }
     </style>
 </head>
@@ -70,21 +34,22 @@
         <div class="label">Adresse</div><div id="addr" class="value"></div>
     </div>
     <div class="footer">
-        <a id="lnkC" href="#" target="_blank" class="btn btn-p">Odoo Kontakt</a>
-        <a id="lnkS" href="#" target="_blank" class="btn btn-s">Odoo Verkauf</a>
+        <button id="btnC" class="btn btn-p">Odoo Kontakt</button>
+        <button id="btnS" class="btn btn-s">Odoo Verkauf</button>
     </div>
 </div>
 
 <script>
-    console.log("ZAG Insights Script v1.1 geladen (Fix: parseInt)");
+    let globalCleanId = null;
 
     function render(data) {
         if (!data || !data.contact) return;
         const c = data.contact;
         
-        // DER FIX: parseInt("48794--1") ergibt exakt 48794
+        // Die ID-Reinigung
         const rawId = String(c.entryId || c.dbNativeId || "");
-        const cleanId = parseInt(rawId, 10); 
+        const match = rawId.match(/^\d+/);
+        globalCleanId = match ? match[0] : null;
 
         document.getElementById('name').innerText = c.personal?.name?.displayName || c.personal?.name?.fullName || "Unbekannt";
         document.getElementById('comp').innerText = c.company?.name || "";
@@ -95,18 +60,24 @@
         const a = c.personal?.address;
         if(a) document.getElementById('addr').innerText = `${a.street || ""}, ${a.postalCode || ""} ${a.city || ""}`;
 
-        if (!isNaN(cleanId)) {
-            const bC = document.getElementById('lnkC');
-            const bS = document.getElementById('lnkS');
-            
-            bC.href = `https://odoo.zentrale-autoglas.de/web#id=${cleanId}&cids=1&menu_id=102&action=131&model=res.partner&view_type=form`;
-            bS.href = `https://odoo.zentrale-autoglas.de/web#action=795&active_id=${cleanId}&model=sale.order&view_type=list&cids=1&menu_id=102`;
-            
-            bC.style.display = "block";
-            bS.style.display = "block";
-            console.log("Odoo Link generiert für ID:", cleanId);
+        if (globalCleanId) {
+            document.getElementById('btnC').style.display = "block";
+            document.getElementById('btnS').style.display = "block";
         }
     }
+
+    document.getElementById('btnC').onclick = function() {
+        const url = "https://odoo.zentrale-autoglas.de/web#id=" + globalCleanId + "&cids=1&menu_id=102&action=131&model=res.partner&view_type=form";
+        // DIAGNOSE: Aktiviere die nächste Zeile mit // um zu sehen was berechnet wird
+        // alert("Öffne ID: " + globalCleanId); 
+        window.open(url, '_blank');
+    };
+
+    document.getElementById('btnS').onclick = function() {
+        const url = "https://odoo.zentrale-autoglas.de/web#action=795&active_id=" + globalCleanId + "&model=sale.order&view_type=list&cids=1&menu_id=102";
+        window.open(url, '_blank');
+    };
+
     window.addEventListener('message', e => { if (e.data) render(e.data); });
 </script>
 </body>
