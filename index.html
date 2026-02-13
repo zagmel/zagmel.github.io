@@ -3,24 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zentrale Autoglas - Odoo Insights</title>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700;800&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --zag-mint: #3FB59A; /* Brandguide S.7 */
-            --zag-anthrazit: #383D42; /* Brandguide S.7 */
-            --zag-light-bg: #FFFFFF;
+            /* Farben exakt nach Brandguide Seite 7 */
+            --zag-mint: #3FB59A; 
+            --zag-anthrazit: #383D42;
+            --zag-light-grey: #F5F7F7;
         }
 
         body { 
             font-family: 'Source Sans 3', sans-serif; 
             padding: 10px; 
-            background-color: #F5F7F7; 
+            background-color: var(--zag-light-grey); 
             color: var(--zag-anthrazit); 
             margin: 0;
         }
 
         .card { 
-            background: var(--zag-light-bg); 
+            background: #FFFFFF; 
             border-radius: 8px; 
             padding: 20px; 
             max-width: 450px; 
@@ -29,7 +31,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
         
-        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; gap: 10px; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; gap: 10px; flex-wrap: wrap-reverse; }
         .logo { width: 120px; height: auto; }
         .contact-header h2 { 
             margin: 0; 
@@ -38,27 +40,29 @@
             font-size: 1.2em; 
         }
 
-        .grid { display: grid; grid-template-columns: 100px 1fr; gap: 10px; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 20px; }
+        @media (min-width: 320px) { .grid { grid-template-columns: 100px 1fr; gap: 12px; } }
+
         .label { font-weight: 600; color: var(--zag-mint); font-size: 0.75em; text-transform: uppercase; }
         .value { font-size: 0.95em; border-bottom: 1px solid #eee; padding-bottom: 2px; word-break: break-all; }
 
         .footer { display: flex; flex-direction: column; gap: 10px; }
+        @media (min-width: 380px) { .footer { flex-direction: row; } }
         
         .odoo-btn { 
+            flex: 1;
             padding: 12px; 
-            text-decoration: none; 
             border-radius: 4px; 
             font-weight: 600; 
             font-size: 14px;
             text-align: center;
-            transition: 0.2s;
             cursor: pointer;
             border: none;
-            display: block; /* Immer anzeigen für den Test, später auf none */
+            display: none; /* Sichtbar sobald EID da */
         }
 
-        .btn-primary { background-color: var(--zag-anthrazit); color: white; }
-        .btn-secondary { background-color: white; color: var(--zag-mint); border: 2px solid var(--zag-mint); }
+        .btn-primary { background-color: var(--zag-anthrazit); color: white; text-decoration: none; }
+        .btn-secondary { background-color: white; color: var(--zag-mint); border: 2px solid var(--zag-mint); text-decoration: none; }
     </style>
 </head>
 <body>
@@ -80,19 +84,21 @@
     </div>
 
     <div class="footer">
-        <button onclick="openOdoo('contact')" class="odoo-btn btn-primary">Odoo Kontakt</button>
-        <button onclick="openOdoo('sales')" class="odoo-btn btn-secondary">Odoo Verkauf</button>
+        <a id="btnContact" href="#" target="_blank" class="odoo-btn btn-primary">Odoo Kontakt</a>
+        <a id="btnSales" href="#" target="_blank" class="odoo-btn btn-secondary">Odoo Verkauf</a>
     </div>
 </div>
 
 <script>
-    let activeEid = null;
-
     function renderInsights(data) {
         if (!data || !data.contact) return;
         const c = data.contact;
-        activeEid = c.entryId || c.dbNativeId; // Versuche verschiedene ID-Felder
 
+        // EID bereinigen: Alles nach dem ersten '-' entfernen (z.B. "48794--1" -> "48794")
+        let rawEid = c.entryId || c.dbNativeId || "";
+        let cleanEid = String(rawEid).split('-')[0];
+
+        // Daten anzeigen
         document.getElementById('name').innerText = c.personal?.name?.displayName || "Unbekannt";
         document.getElementById('company_name').innerText = c.company?.name || "";
         document.getElementById('customer_number').innerText = c.customFields?.custom1 || "---";
@@ -100,21 +106,19 @@
         document.getElementById('phone').innerText = Array.isArray(c.phoneNumbers?.work) ? c.phoneNumbers.work[0] : (c.phoneNumbers?.work || "---");
         
         const addr = c.personal?.address;
-        if(addr) document.getElementById('address').innerText = `${addr.street}, ${addr.postalCode} ${addr.city}`;
-    }
+        if(addr) document.getElementById('address').innerText = `${addr.street || ""}, ${addr.postalCode || ""} ${addr.city || ""}`;
 
-    function openOdoo(type) {
-        if (!activeEid) {
-            alert("Fehler: Keine EID vom XPhone Server erhalten.");
-            return;
+        // Links bauen
+        if (cleanEid) {
+            const btnC = document.getElementById('btnContact');
+            const btnS = document.getElementById('btnSales');
+
+            btnC.href = `https://odoo.zentrale-autoglas.de/web#id=${cleanEid}&cids=1&menu_id=102&action=131&model=res.partner&view_type=form`;
+            btnS.href = `https://odoo.zentrale-autoglas.de/web#action=795&active_id=${cleanEid}&model=sale.order&view_type=list&cids=1&menu_id=102`;
+            
+            btnC.style.display = "block";
+            btnS.style.display = "block";
         }
-        
-        const urls = {
-            contact: `https://odoo.zentrale-autoglas.de/web#id=${activeEid}&cids=1&menu_id=102&action=131&model=res.partner&view_type=form`,
-            sales: `https://odoo.zentrale-autoglas.de/web#action=795&active_id=${activeEid}&model=sale.order&view_type=list&cids=1&menu_id=102`
-        };
-
-        window.open(urls[type], '_blank');
     }
 
     window.addEventListener('message', (event) => {
