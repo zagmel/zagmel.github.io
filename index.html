@@ -7,21 +7,66 @@
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@800&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
+            /* Farben exakt nach Brandguide Seite 7 */
             --zag-mint: #3FB59A; 
             --zag-anthrazit: #383D42;
             --zag-bg: #F5F7F7;
         }
-        body { font-family: 'Source Sans 3', sans-serif; padding: 10px; background-color: var(--zag-bg); color: var(--zag-anthrazit); margin: 0; }
-        .card { background: #fff; border-radius: 8px; padding: 20px; max-width: 450px; margin: auto; border-top: 5px solid var(--zag-mint); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap-reverse; }
+        body { 
+            font-family: 'Source Sans 3', sans-serif; /* Hausschrift [cite: 9] */
+            padding: 10px; 
+            background-color: var(--zag-bg); 
+            color: var(--zag-anthrazit); 
+            margin: 0; 
+        }
+        .card { 
+            background: #fff; 
+            border-radius: 8px; 
+            padding: 20px; 
+            max-width: 450px; 
+            margin: auto; 
+            border-top: 5px solid var(--zag-mint); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+        }
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+            margin-bottom: 20px; 
+            flex-wrap: wrap-reverse; 
+            gap: 10px;
+        }
         .logo { width: 120px; height: auto; }
-        h2 { margin: 0; font-family: 'Exo 2', sans-serif; font-weight: 800; font-size: 1.2em; }
+        h2 { 
+            margin: 0; 
+            font-family: 'Exo 2', sans-serif; /* Schmuckschrift [cite: 9] */
+            font-weight: 800; 
+            font-size: 1.2em; 
+        }
         .grid { display: grid; grid-template-columns: 100px 1fr; gap: 10px; margin-bottom: 20px; }
-        .label { font-weight: 600; color: var(--zag-mint); font-size: 0.75em; text-transform: uppercase; }
-        .value { font-size: 0.95em; border-bottom: 1px solid #eee; word-break: break-all; }
+        .label { 
+            font-weight: 600; 
+            color: var(--zag-mint); 
+            font-size: 0.75em; 
+            text-transform: uppercase; 
+        }
+        .value { font-size: 0.95em; border-bottom: 1px solid #eee; word-break: break-all; min-height: 1.2em; }
         .footer { display: flex; flex-direction: column; gap: 10px; }
         @media (min-width: 380px) { .footer { flex-direction: row; } }
-        .btn { flex: 1; padding: 12px; border-radius: 4px; font-weight: 600; font-size: 14px; text-align: center; cursor: pointer; border: none; text-decoration: none; display: none; }
+        .btn { 
+            flex: 1; 
+            padding: 12px; 
+            border-radius: 4px; 
+            font-weight: 600; 
+            font-size: 14px; 
+            text-align: center; 
+            cursor: pointer; 
+            border: none; 
+            text-decoration: none; 
+            display: none; 
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.8; }
         .btn-p { background-color: var(--zag-anthrazit); color: white; }
         .btn-s { background-color: white; color: var(--zag-mint); border: 2px solid var(--zag-mint); }
     </style>
@@ -29,14 +74,14 @@
 <body>
 <div class="card">
     <div class="header">
-        <div><h2 id="name">Lade...</h2><div id="comp" style="font-size: 0.9em; opacity: 0.7;"></div></div>
+        <div><h2 id="name">Lade Kontakt...</h2><div id="comp" style="font-size: 0.9em; opacity: 0.7;"></div></div>
         <img src="https://www.zentrale-autoglas.de/cdn/shop/files/ZAG_Logo_2025_sRGB_grey_512px.png?v=1759404850&width=180" class="logo">
     </div>
     <div class="grid">
-        <div class="label">Kunden-Nr</div><div id="cno" class="value">---</div>
-        <div class="label">E-Mail</div><div id="mail" class="value">---</div>
-        <div class="label">Telefon</div><div id="tel" class="value">---</div>
-        <div class="label">Adresse</div><div id="addr" class="value">---</div>
+        <div class="label">Kunden-Nr</div><div id="cno" class="value"></div>
+        <div class="label">E-Mail</div><div id="mail" class="value"></div>
+        <div class="label">Telefon</div><div id="tel" class="value"></div>
+        <div class="label">Adresse</div><div id="addr" class="value"></div>
     </div>
     <div class="footer">
         <a id="lnkC" href="#" target="_blank" class="btn btn-p">Odoo Kontakt</a>
@@ -48,11 +93,12 @@
         if (!data || !data.contact) return;
         const c = data.contact;
         
-        // ID REINIGUNG: Wir nehmen NUR die Ziffern am Anfang 
+        // FIX: Trenne die ID am ersten Bindestrich
+        // "48794--1" -> wird am '-' gesplittet -> [0] ist "48794"
         const rawId = String(c.entryId || c.dbNativeId || "");
-        const cleanId = rawId.replace(/\D/g, ''); // Entfernt ALLES was keine Zahl ist
+        const cleanId = rawId.split('-')[0].trim();
 
-        document.getElementById('name').innerText = c.personal?.name?.displayName || "Unbekannt";
+        document.getElementById('name').innerText = c.personal?.name?.displayName || c.personal?.name?.fullName || "Unbekannt";
         document.getElementById('comp').innerText = c.company?.name || "";
         document.getElementById('cno').innerText = c.customFields?.custom1 || "---";
         document.getElementById('mail').innerText = c.emails?.primary || "---";
@@ -61,11 +107,10 @@
         const a = c.personal?.address;
         if(a) document.getElementById('addr').innerText = `${a.street || ""}, ${a.postalCode || ""} ${a.city || ""}`;
 
-        if (cleanId) {
+        if (cleanId && cleanId !== "") {
             const bC = document.getElementById('lnkC');
             const bS = document.getElementById('lnkS');
             
-            // Wir bauen die URL hier final zusammen
             bC.href = `https://odoo.zentrale-autoglas.de/web#id=${cleanId}&cids=1&menu_id=102&action=131&model=res.partner&view_type=form`;
             bS.href = `https://odoo.zentrale-autoglas.de/web#action=795&active_id=${cleanId}&model=sale.order&view_type=list&cids=1&menu_id=102`;
             
