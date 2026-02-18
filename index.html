@@ -38,7 +38,64 @@
         <button id="btnS" class="btn btn-s">Auftrag erstellen</button>
     </div>
 </div>
+<script>
+    let globalCleanId = null;
 
+    function render(data) {
+        if (!data || !data.contact) return;
+        const c = data.contact;
+        
+        // 1. ID-Reinigung (nimmt nur die Ziffern vor dem ersten Bindestrich)
+        const rawId = String(c.entryId || c.dbNativeId || "");
+        const match = rawId.match(/^\d+/);
+        globalCleanId = match ? match[0] : null;
+
+        // 2. Basisdaten (Name und Firma)
+        document.getElementById('name').innerText = c.personal?.name?.displayName || c.personal?.name?.fullName || "Unbekannt";
+        document.getElementById('comp').innerText = c.company?.name || "";
+        
+        // 3. KUNDENNUMMER: XPhone mappt "Kundennummer" im Schema oft auf "customFields.custom1" 
+        // oder behält den Namen "customer_number" in dbFields bei.
+        document.getElementById('cno').innerText = c.customer_number || c.dbFields?.customer_number || c.customFields?.custom1 || "---";
+        
+        // 4. E-MAIL & TELEFON
+        document.getElementById('mail').innerText = c.emails?.primary || "---";
+        document.getElementById('tel').innerText = Array.isArray(c.phoneNumbers?.work) ? c.phoneNumbers.work[0] : (c.phoneNumbers?.work || "---");
+        
+        // 5. ADRESSE: XPhone nutzt für Odoo-Kontakte meist das 'company.address' Objekt
+        // Wir prüfen beide Möglichkeiten und verschiedene Feldnamen für die PLZ (zip_code vs postalCode)
+        const a = c.company?.address || c.personal?.address;
+        if(a) {
+            const street = a.street || "";
+            const zip = a.zip_code || a.postalCode || ""; 
+            const city = a.city || "";
+            const combinedAddr = `${street}, ${zip} ${city}`.trim();
+            document.getElementById('addr').innerText = combinedAddr !== "," ? combinedAddr : "---";
+        } else {
+            document.getElementById('addr').innerText = "---";
+        }
+
+        // 6. Buttons anzeigen
+        if (globalCleanId) {
+            document.getElementById('btnC').style.display = "block";
+            document.getElementById('btnS').style.display = "block";
+        }
+    }
+
+    // Button-Logik für Odoo (identisch zu deiner Version)
+    document.getElementById('btnC').onclick = function() {
+        if (!globalCleanId) return;
+        window.open("https://odoo.zentrale-autoglas.de/web#id=" + globalCleanId + "&cids=1&menu_id=102&action=131&model=res.partner&view_type=form", '_blank');
+    };
+
+    document.getElementById('btnS').onclick = function() {
+        if (!globalCleanId) return;
+        window.open("https://odoo.zentrale-autoglas.de/web#cids=1&menu_id=102&action=795&active_id=" + globalCleanId + "&model=sale.order&view_type=form", '_blank');
+    };
+
+    window.addEventListener('message', e => { if (e.data) render(e.data); });
+</script>
+<!--
 <script>
     let globalCleanId = null;
 
@@ -80,5 +137,6 @@
 
     window.addEventListener('message', e => { if (e.data) render(e.data); });
 </script>
+-->
 </body>
 </html>
