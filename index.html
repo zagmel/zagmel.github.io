@@ -34,8 +34,8 @@
         <div class="label">Adresse</div><div id="addr" class="value"></div>
     </div>
     <div class="footer">
-        <button id="btnC" class="btn btn-p">Odoo Kontakt</button>
-        <button id="btnS" class="btn btn-s">Odoo Verkauf</button>
+        <button id="btnC" class="btn btn-p">Kontakt öffnen</button>
+        <button id="btnS" class="btn btn-s">Auftrag erstellen</button>
     </div>
 </div>
 
@@ -74,7 +74,7 @@
     };
 
     document.getElementById('btnS').onclick = function() {
-        const url = "https://odoo.zentrale-autoglas.de/web#action=795&active_id=" + globalCleanId + "&model=sale.order&view_type=list&cids=1&menu_id=102";
+        const url = "https://odoo.zentrale-autoglas.de/web#cids=1&menu_id=102&action=795&active_id=" + globalCleanId + "&model=sale.order&view_type=form";
         window.open(url, '_blank');
     };
 
